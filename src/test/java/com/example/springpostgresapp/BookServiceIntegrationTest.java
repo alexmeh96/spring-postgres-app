@@ -1,5 +1,7 @@
 package com.example.springpostgresapp;
 
+import com.example.springpostgresapp.dto.BookFilter;
+import com.example.springpostgresapp.dto.FilterDto;
 import com.example.springpostgresapp.entity.Book;
 import com.example.springpostgresapp.model.Info;
 import com.example.springpostgresapp.repository.BookRepository;
@@ -114,5 +116,50 @@ public class BookServiceIntegrationTest {
 
         List<Book> bookList = bookRepository.findBookByCategory(collect);
         assertEquals(2, bookList.size());
+    }
+
+    @Test
+    void testFilterServiceByQueryDsl() {
+        FilterDto filterDto = FilterDto.builder().name("book2").build();
+        List<Book> books = bookService.bookFilterByQueryDsl(filterDto);
+        assertEquals(1, books.size());
+
+        filterDto = FilterDto.builder().name("book22").build();
+        books = bookService.bookFilterByQueryDsl(filterDto);
+        assertEquals(0, books.size());
+
+        filterDto = FilterDto.builder().build();
+        books = bookService.bookFilterByQueryDsl(filterDto);
+        assertEquals(0, books.size());
+
+//        filterDto = FilterDto.builder().categories(List.of("category1")).build();
+//        books = bookService.bookFilterByQueryDsl(filterDto);
+//        assertEquals(1, books.size());
+    }
+
+    @Test
+    void test7() {
+        List<Book> bookList = bookRepository.findBookWithNull("book2", 6);
+        assertEquals(0, bookList.size());
+
+        bookList = bookRepository.findBookWithNull("book2", null);
+        assertEquals(1, bookList.size());
+
+        bookList = bookRepository.findBookWithNull(null, null);
+        assertEquals(3, bookList.size());
+    }
+
+    @Test
+    void testFilterByCriteria() {
+        BookFilter bookFilter = BookFilter.builder().name("%ok1").build();
+        List<Book> bookList = bookRepository.findAllByCriteria(bookFilter);
+        assertEquals(1, bookList.size());
+    }
+
+    @Test
+    void testFilterByQueryDsl() {
+        BookFilter bookFilter = BookFilter.builder().name("%ok1").build();
+        List<Book> bookList = bookRepository.findAllByQueryDsl(bookFilter);
+        assertEquals(1, bookList.size());
     }
 }
