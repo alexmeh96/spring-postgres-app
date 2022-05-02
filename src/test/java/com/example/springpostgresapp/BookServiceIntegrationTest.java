@@ -179,4 +179,11 @@ public class BookServiceIntegrationTest {
         List<Book> bookList = bookRepository.findAllByFilterJdbcNamedParams(bookFilter);
         assertEquals(1, bookList.size());
     }
+
+    @Test
+    void testFilterByEntityManager() {
+        BookFilter bookFilter = BookFilter.builder().name("%ok1").count(2).build();
+        List<Book> bookList = bookRepository.findAllByFilterEntityManager(bookFilter);
+        assertEquals(1, bookList.size());
+    }
 }

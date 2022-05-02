@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface BookFilterRepository {
 
+    List<Book> findAllByFilterEntityManager(BookFilter bookFilter);
+
     List<Book> findAllByFilterJdbc(BookFilter bookFilter);
     List<Book> findAllByFilterJdbcNamedParams(BookFilter bookFilter);
 

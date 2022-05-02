@@ -14,9 +14,9 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,16 +30,32 @@ public class BookFilterRepositoryImpl implements BookFilterRepository {
 
 
     @Override
+    public List<Book> findAllByFilterEntityManager(BookFilter filter) {
+
+        String queryString = """
+                Select * 
+                from test_schema.book
+                    where name like :name
+                        and count > :count
+                """;
+
+        Query query = entityManager.createNativeQuery(queryString, Book.class);
+        query.setParameter("name", filter.getName());
+        query.setParameter("count", filter.getCount());
+        return (List<Book>) query.getResultList();
+    }
+
+    @Override
     public List<Book> findAllByFilterJdbc(BookFilter filter) {
 
-        String query = """
+        String queryString = """
                 Select name, count 
                 from test_schema.book
                     where name like ?
                         and count > ?
                 """;
 
-        return jdbcTemplate.query(query, (rs, rowNum) -> Book.builder()
+        return jdbcTemplate.query(queryString, (rs, rowNum) -> Book.builder()
                         .name(rs.getString("name"))
                         .count(rs.getInt("count"))
                         .build(),
@@ -49,7 +65,7 @@ public class BookFilterRepositoryImpl implements BookFilterRepository {
     @Override
     public List<Book> findAllByFilterJdbcNamedParams(BookFilter filter) {
 
-        String query = """
+        String queryString = """
                 Select name, count 
                 from test_schema.book
                     where name like :name
@@ -62,7 +78,7 @@ public class BookFilterRepositoryImpl implements BookFilterRepository {
         paramMap.addValue("name", filter.getName());
         paramMap.addValue("count", filter.getCount());
 
-        return namedJdbcTemplate.query(query, paramMap, (rs, rowNum) -> Book.builder()
+        return namedJdbcTemplate.query(queryString, paramMap, (rs, rowNum) -> Book.builder()
                 .name(rs.getString("name"))
                 .count(rs.getInt("count"))
                 .build()
