@@ -10,7 +10,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BookService {
@@ -22,33 +21,33 @@ public class BookService {
     @Autowired
     private ShopRepository shopRepository;
 
-    private Optional<Book> getBook(Long id) {
-        return bookRepository.findById(id);
+    public Book getBook(Long id) {
+        return bookRepository.findById(id).orElse(null);
     }
 
-    private List<Book> getBooks() {
+    public List<Book> getBooks() {
         return bookRepository.findAll();
     }
 
-    private List<Book> getBooks(int page, int size) {
+    public List<Book> getBooks(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return bookRepository.findAll(pageable).getContent();
     }
 
-    private Book createBook(Book book) {
+    public Book createBook(Book book) {
         return bookRepository.save(book);
     }
 
-    private List<Book> createBooks(List<Book> books) {
+    public List<Book> createBooks(List<Book> books) {
         return bookRepository.saveAll(books);
     }
 
-    private Book updateBook(Long id, Book book) {
+    public Book updateBook(Long id, Book book) {
         book.setId(id);
         return bookRepository.save(book);
     }
 
-    private void deleteBook(Long id) {
+    public void deleteBook(Long id) {
         bookRepository.deleteById(id);
     }
 
