@@ -3,10 +3,7 @@ package com.example.springpostgresapp.entity;
 import com.example.springpostgresapp.model.Info;
 import com.vladmihalcea.hibernate.type.array.ListArrayType;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.hibernate.annotations.TypeDefs;
@@ -14,6 +11,7 @@ import org.hibernate.annotations.TypeDefs;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -27,6 +25,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(exclude = {"id", "shop", "authors"})
+@ToString(exclude = {"shop", "authors"})
 @Builder
 @Entity
 @Table(name = "book", schema = "test_schema")
@@ -50,16 +50,37 @@ public class Book {
             name = "categories",
             columnDefinition = "text[]"
     )
-    private List<String> categories;
+    @Builder.Default
+    private List<String> categories = new ArrayList<>();
 
     @Type(type = "list-array")
     @Column(
             name = "codes",
             columnDefinition = "integer[]"
     )
-    private List<Integer> codes;
+    @Builder.Default
+    private List<Integer> codes = new ArrayList<>();
 
     @Type(type = "jsonb")
     @Column(columnDefinition = "jsonb") // or, json
     private Info info;
+
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @JoinColumn(name = "shop_id")
+    private Shop shop;
+
+    @Builder.Default
+    @ManyToMany
+    @JoinTable(
+            name = "books_author",
+            schema = "test_schema",
+            joinColumns = @JoinColumn(name = "book_id"),
+            inverseJoinColumns = @JoinColumn(name = "author_id"))
+    private List<Author> authors = new ArrayList<>();
+
+
+    public void addAuthor(Author author) {
+        authors.add(author);
+        author.getBooks().add(this);
+    }
 }

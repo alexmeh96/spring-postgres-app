@@ -61,6 +61,8 @@ public class BookService {
         bookRepository.deleteById(id);
     }
 
+
+
     public List<Book> bookFilterByQueryDsl(FilterDto filter) {
         List<Predicate> predicates = new ArrayList<>();
 
@@ -68,7 +70,7 @@ public class BookService {
             BooleanExpression eq = QBook.book.name.eq(filter.getName());
             predicates.add(eq);
         }
-        if (filter.getCategories() != null && !filter.getCategories().isEmpty()) {
+        if (!filter.getCategories().isEmpty()) {
             String categories = filter.getCategories().stream().collect(Collectors.joining(",", "{", "}"));
             BooleanTemplate booleanTemplate = Expressions.booleanTemplate("my_func({0}, string_to_array({1}, ',')) = true", QBook.book.categories, categories);
             predicates.add(booleanTemplate);

@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -20,11 +21,14 @@ public class BookFilter {
     private LocalDate localDate;
     private LocalDateTime localDateTime;
 
-    private List<String> categories;
-    private List<Integer> codes;
+    @Builder.Default
+    private List<String> categories = new ArrayList<>();
+    @Builder.Default
+    private List<Integer> codes = new ArrayList<>();
 
     private String title;
     private Double ratingStart;
     private Double ratingFinish;
-    private List<String> tags;
+    @Builder.Default
+    private List<String> tags = new ArrayList<>();
 }
