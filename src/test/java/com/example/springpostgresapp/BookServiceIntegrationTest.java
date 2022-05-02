@@ -168,21 +168,36 @@ public class BookServiceIntegrationTest {
 
     @Test
     void testFilterByJdbc() {
-        BookFilter bookFilter = BookFilter.builder().name("%ok1").count(2).build();
+        BookFilter bookFilter = BookFilter.builder()
+                .name("%ok1")
+                .count(2)
+                .categories(List.of("category1", "category11"))
+                .title("title1")
+                .build();
         List<Book> bookList = bookRepository.findAllByFilterJdbc(bookFilter);
         assertEquals(1, bookList.size());
     }
 
     @Test
     void testFilterByJdbcNamedParams() {
-        BookFilter bookFilter = BookFilter.builder().name("%ok1").count(2).build();
+        BookFilter bookFilter = BookFilter.builder()
+                .name("%ok1")
+                .count(2)
+                .categories(List.of("category1", "category11"))
+                .title("title1")
+                .build();
         List<Book> bookList = bookRepository.findAllByFilterJdbcNamedParams(bookFilter);
         assertEquals(1, bookList.size());
     }
 
     @Test
     void testFilterByEntityManager() {
-        BookFilter bookFilter = BookFilter.builder().name("%ok1").count(2).build();
+        BookFilter bookFilter = BookFilter.builder()
+                .name("%ok1")
+                .count(2)
+                .categories(List.of("category1", "category11"))
+                .title("title1")
+                .build();
         List<Book> bookList = bookRepository.findAllByFilterEntityManager(bookFilter);
         assertEquals(1, bookList.size());
     }

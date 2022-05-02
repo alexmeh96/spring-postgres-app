@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.joining;
+
 @RequiredArgsConstructor
 public class BookFilterRepositoryImpl implements BookFilterRepository {
 
@@ -34,14 +36,18 @@ public class BookFilterRepositoryImpl implements BookFilterRepository {
 
         String queryString = """
                 Select * 
-                from test_schema.book
+                from test_schema.book b
                     where name like :name
-                        and count > :count
+                        and b.count > :count
+                        and b.categories && CAST(:categories AS text[])
+                        and b.info ->> 'title' = :title
                 """;
 
         Query query = entityManager.createNativeQuery(queryString, Book.class);
         query.setParameter("name", filter.getName());
         query.setParameter("count", filter.getCount());
+        query.setParameter("title", filter.getTitle());
+        query.setParameter("categories", filter.getCategories().stream().collect(joining(",", "{", "}")));
         return (List<Book>) query.getResultList();
     }
 
@@ -50,16 +56,21 @@ public class BookFilterRepositoryImpl implements BookFilterRepository {
 
         String queryString = """
                 Select name, count 
-                from test_schema.book
+                from test_schema.book b
                     where name like ?
-                        and count > ?
+                        and b.count > ?
+                        and b.categories && ? ::text[]
+                        and b.info ->> 'title' = ? 
                 """;
 
         return jdbcTemplate.query(queryString, (rs, rowNum) -> Book.builder()
                         .name(rs.getString("name"))
                         .count(rs.getInt("count"))
                         .build(),
-                filter.getName(), filter.getCount());
+                filter.getName(),
+                filter.getCount(),
+                filter.getCategories().stream().collect(joining(",", "{", "}")),
+                filter.getTitle());
     }
 
     @Override
@@ -67,9 +78,11 @@ public class BookFilterRepositoryImpl implements BookFilterRepository {
 
         String queryString = """
                 Select name, count 
-                from test_schema.book
+                from test_schema.book b
                     where name like :name
-                        and count > :count
+                        and b.count > :count
+                        and b.categories && :categories ::text[]
+                        and b.info ->> 'title' = :title
                 """;
 
 //        Map<String, Object> paramMap = Map.of("name", filter.getName(), "count", filter.getCount());
@@ -77,6 +90,8 @@ public class BookFilterRepositoryImpl implements BookFilterRepository {
         var paramMap = new MapSqlParameterSource();
         paramMap.addValue("name", filter.getName());
         paramMap.addValue("count", filter.getCount());
+        paramMap.addValue("title", filter.getTitle());
+        paramMap.addValue("categories", filter.getCategories().stream().collect(joining(",", "{", "}")));
 
         return namedJdbcTemplate.query(queryString, paramMap, (rs, rowNum) -> Book.builder()
                 .name(rs.getString("name"))
