@@ -9,22 +9,64 @@ import com.querydsl.core.types.dsl.BooleanTemplate;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.persistence.EntityManager;
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @RequiredArgsConstructor
 public class BookFilterRepositoryImpl implements BookFilterRepository {
 
     private final EntityManager entityManager;
+    private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedJdbcTemplate;
+
 
     @Override
-    public List<Book> findAllByBookFilter(BookFilter bookFilter) {
-        return null;
+    public List<Book> findAllByFilterJdbc(BookFilter filter) {
+
+        String query = """
+                Select name, count 
+                from test_schema.book
+                    where name like ?
+                        and count > ?
+                """;
+
+        return jdbcTemplate.query(query, (rs, rowNum) -> Book.builder()
+                        .name(rs.getString("name"))
+                        .count(rs.getInt("count"))
+                        .build(),
+                filter.getName(), filter.getCount());
+    }
+
+    @Override
+    public List<Book> findAllByFilterJdbcNamedParams(BookFilter filter) {
+
+        String query = """
+                Select name, count 
+                from test_schema.book
+                    where name like :name
+                        and count > :count
+                """;
+
+//        Map<String, Object> paramMap = Map.of("name", filter.getName(), "count", filter.getCount());
+
+        var paramMap = new MapSqlParameterSource();
+        paramMap.addValue("name", filter.getName());
+        paramMap.addValue("count", filter.getCount());
+
+        return namedJdbcTemplate.query(query, paramMap, (rs, rowNum) -> Book.builder()
+                .name(rs.getString("name"))
+                .count(rs.getInt("count"))
+                .build()
+        );
     }
 
     @Override

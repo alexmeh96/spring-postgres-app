@@ -28,6 +28,7 @@ public class BookServiceIntegrationTest {
     private BookRepository bookRepository;
 
     Book book1 = Book.builder()
+            .id(1L)
             .name("book1")
             .price(55.23)
             .count(3)
@@ -45,6 +46,7 @@ public class BookServiceIntegrationTest {
             .build();
 
     Book book2 = Book.builder()
+            .id(2L)
             .name("book2")
             .price(565.23)
             .count(5)
@@ -62,6 +64,7 @@ public class BookServiceIntegrationTest {
             .build();
 
     Book book3 = Book.builder()
+            .id(3L)
             .name("book3")
             .price(23.0)
             .count(8)
@@ -105,7 +108,7 @@ public class BookServiceIntegrationTest {
     }
 
     @Test
-    void test5() {
+    void testNativeQuery() {
         Book book = bookRepository.findBookByInfoTitle("title2");
         assertEquals("book2", book.getName());
 
@@ -138,7 +141,7 @@ public class BookServiceIntegrationTest {
     }
 
     @Test
-    void test7() {
+    void testFindBookWithNull() {
         List<Book> bookList = bookRepository.findBookWithNull("book2", 6);
         assertEquals(0, bookList.size());
 
@@ -160,6 +163,20 @@ public class BookServiceIntegrationTest {
     void testFilterByQueryDsl() {
         BookFilter bookFilter = BookFilter.builder().name("%ok1").build();
         List<Book> bookList = bookRepository.findAllByQueryDsl(bookFilter);
+        assertEquals(1, bookList.size());
+    }
+
+    @Test
+    void testFilterByJdbc() {
+        BookFilter bookFilter = BookFilter.builder().name("%ok1").count(2).build();
+        List<Book> bookList = bookRepository.findAllByFilterJdbc(bookFilter);
+        assertEquals(1, bookList.size());
+    }
+
+    @Test
+    void testFilterByJdbcNamedParams() {
+        BookFilter bookFilter = BookFilter.builder().name("%ok1").count(2).build();
+        List<Book> bookList = bookRepository.findAllByFilterJdbcNamedParams(bookFilter);
         assertEquals(1, bookList.size());
     }
 }
